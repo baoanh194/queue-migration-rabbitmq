@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.7-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  integration-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /usr/local/bin/wait-for-it rabbitmq:5672 --timeout=60 -- pytest test/tests/perf -q --disable-warnings --maxfail=1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+      - VHOST=/

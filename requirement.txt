@@ -1,0 +1,9 @@
+colorama
+requests
+pika
+json
+argparse
+subprocess
+sys
+logging
+re
